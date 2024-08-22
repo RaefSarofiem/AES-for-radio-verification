@@ -6,13 +6,6 @@ Psuedotext
 // plain text is 16 bytes / 128 bits. this will hold the command to start or stop.
 // key is also 128 bits. will need to be hard coded into the transmitter and receiver
 
-//code for turning on: 01010100 01110101 01110010 01101110 00100000 01101111 01101110 00100000 01110000 01101100 01100101 01100001 01110011 01100101 00111010 00101001
-"Turn on please:)"
-
-//code for turning off:
-
-//for rolling code, can increment plain text, then de-increment it by seed number after decrypting.
-// NO. if I can just use the current state of the transistor to tell me if the click should be on or off. if its on, off. if off, on!
  
 
 
@@ -86,7 +79,45 @@ rcon():
 
 
 
-Step 2: Round Tranformations
+Step 2:
+
+Seed / counter / plaintext
+
+//take original plaintext and incremement it by seed
+//needs to be 16 bytes
+
+//how will it be incremented? adding one bit at a time to the end might be too easy
+//maybe use an exponential function to increment it? or not idk
+// fibonnaci numbers - get too big too fast
+// diff sequenece, adds by the 10th previous number.
+	
+
+
+*largest number possible is 340282366920938463463374607431768211455
+
+*that can fit into the 6 bytes 186 times with fib sequence, after which needs to be reset to 0
+
+above is now false: Fibonacci - generated seed is now allocated to 13 bytes, with 3 bytes being allocated for 24 hr time.
+
+largest number possible to be held in 13 bytes is 20282409603651670423947251286015
+
+largest achievable number by fib seq. in given # bytes is 16130531424904581415797907386349
+
+meaning we have 151 cycles of the fib sequence.
+
+BUT need to skip 1 in sequence since it repeats (fib(1)=1 and fib(2)=1)
+also skipping 0 since 0 is too obvious.
+seed starts at 2.
+
+seed=2
+plaintextgen():
+	if seed>=151:
+		seed=2
+	plaintext=Fibonacci(seed)+time()
+	seed+=1
+
+
+Step 3: Round Tranformations
 
 encrypt():
 
@@ -96,21 +127,19 @@ encrypt():
 
 
 mainround(text,rounds):
-		
-	sbytes= sbox(text)
-	
 	
 	for rounds:
+
+		sbytes= sbox(text)
 
 		shiftedbytes=shiftRows(sbytes)
 	
 		mixedbytes=mixColumns(shiftedbytes)
 	
-		rkbytes=AddRoundKey(mixedbytes)
+		text=AddRoundKey(mixedbytes)
+		
 	
-		sbytes=sbox(rkbytes)
-	
-	finalround(sbytes)
+	finalround(text)
 	
 
 finalround(text):
@@ -120,7 +149,8 @@ finalround(text):
 	shiftedbytes=shiftRows(sbytes)
 	
 	rkbytes=AddRoundKey(shiftedbytes)
-
+	
+	return rkbytes
 
 
 shiftRows(bytes):
@@ -131,24 +161,25 @@ shiftRows(bytes):
 	byte [8] switch with byte [10]
 	byte [9] switch with byte [11]
 
-	byte [15] moved to 12
-	byte 12 13 14 moved up 
-
+	byte [15] moved to [12]
+	byte 12 13 14 moved up 1
 mixColumns(bytes):
 
 matrix multiplication with predefined matrix
+[2 3 1 1,
+ 1 2 3 1,
+ 1 1 2 3,
+ 3 1 1 2]
 
 
 AddRoundKey(bytes):
 
-XOR dataset with roundkey
+XOR dataset with round key
 
 
 
 
-Step 3:
+Step 4:
 
-Seed / counter / plaintext
-
-plaintextgen
+Sending to reciever	
 

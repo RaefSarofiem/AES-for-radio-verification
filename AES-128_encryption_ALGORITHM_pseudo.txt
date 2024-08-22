@@ -1,0 +1,154 @@
+AES-128 encryption ALGORITHM - transmitting
+
+Psuedotext
+
+// things to remember
+// plain text is 16 bytes / 128 bits. this will hold the command to start or stop.
+// key is also 128 bits. will need to be hard coded into the transmitter and receiver
+
+//code for turning on: 01010100 01110101 01110010 01101110 00100000 01101111 01101110 00100000 01110000 01101100 01100101 01100001 01110011 01100101 00111010 00101001
+"Turn on please:)"
+
+//code for turning off:
+
+//for rolling code, can increment plain text, then de-increment it by seed number after decrypting.
+// NO. if I can just use the current state of the transistor to tell me if the click should be on or off. if its on, off. if off, on!
+ 
+
+
+Step 1: Splitting key into roundkeys // key expansion
+
+
+example of how to differentiate words ina loop
+c=0
+L=[w0,w1,w2,w3]
+
+w=L[which word + starting point(counter)]
+wor1=L[0+c]
+
+wor2=L[1+c]
+etc. etc.
+
+words are created and stuff happens, g function returns, etc.
+
+c+=4
+
+[w0^,w1,w2,w3,w4^,w5,w6,w7]
+
+
+key is created 16 bits
+  
+each 4 bits in order are split into words (4 words)
+
+the 4 words are the words that make up the first key  (yes, round 0 key is the main key)
+
+4 words are added to List of words L
+
+
+
+expansionfunc(L): (runs 10 times)
+	if (first run) then define w1-4 from L
+	Gwor4= gfunc(wor4)
+	Nwor1 = Gwor4 XOR wor1
+	Nwor2 = Nwor1 XOR wor2
+	Nwor3 = Nwor2 XOR wor3
+	Nwor4 = Nwor3 XOR wor4
+	
+	Nwor1-4 added to L
+	
+	wor1-4=Nwor1-4
+
+
+
+	
+
+gfunc(word): 
+
+	move byte[4] to end of index
+
+	move all other bytes to previous index
+
+	byte[1-4]=sbox(byte[1-4])
+
+	rconbyte=rcon()
+
+	nbyte[1-4]=byte[1-4] XOR rconbyte[1-4]
+
+	return nbyte
+
+sbox(byte):
+	
+	s box conversion. remember, first 4 bits are row, last 4 bits are column
+
+rcon():
+	store all RCONs, keep counter either globally or as an argument/attribute of the function you put in
+	give proper rcon when called
+
+
+
+Step 2: Round Tranformations
+
+encrypt():
+
+	round1text= addRoundKey(plaintext)
+
+	mainround(round1text,10)
+
+
+mainround(text,rounds):
+		
+	sbytes= sbox(text)
+	
+	
+	for rounds:
+
+		shiftedbytes=shiftRows(sbytes)
+	
+		mixedbytes=mixColumns(shiftedbytes)
+	
+		rkbytes=AddRoundKey(mixedbytes)
+	
+		sbytes=sbox(rkbytes)
+	
+	finalround(sbytes)
+	
+
+finalround(text):
+
+	sbytes= sbox(text)
+
+	shiftedbytes=shiftRows(sbytes)
+	
+	rkbytes=AddRoundKey(shiftedbytes)
+
+
+
+shiftRows(bytes):
+
+	byte[4] moved to [7]
+	bytes 5 6 7 moved back 1
+	
+	byte [8] switch with byte [10]
+	byte [9] switch with byte [11]
+
+	byte [15] moved to 12
+	byte 12 13 14 moved up 
+
+mixColumns(bytes):
+
+matrix multiplication with predefined matrix
+
+
+AddRoundKey(bytes):
+
+XOR dataset with roundkey
+
+
+
+
+Step 3:
+
+Seed / counter / plaintext
+
+plaintextgen
+
